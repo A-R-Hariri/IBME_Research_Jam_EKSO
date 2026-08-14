@@ -31,6 +31,8 @@ DEFAULT_CSV = "ekso_data.csv"
 
 N_CHANNELS = 27
 
+NUM_PLOTS = 4
+
 # Replace these once the frame layout of CMD_GET_DATA is confirmed.
 CHANNEL_NAMES = ["ch{:02d}".format(i) for i in range(N_CHANNELS)]
 
@@ -38,7 +40,7 @@ CHANNEL_NAMES = ["ch{:02d}".format(i) for i in range(N_CHANNELS)]
 POLL_PERIOD_MS = 50
 DEFAULT_BUFFER_SAMPLES = 500
 
-PLOT_PENS = ["#378ADD", "#1D9E75", "#D85A30"]
+PLOT_PENS = ["#378ADD", "#B446FD", "#D85A30", "#60D830"]
 
 
 class CsvTail:
@@ -86,9 +88,7 @@ class CsvTail:
 
 
 class ChannelDialog(QDialog):
-    """Pick exactly 3 of the 27 logged columns."""
-
-    REQUIRED = 3
+    REQUIRED = NUM_PLOTS
 
     def __init__(self, preset=None, parent=None):
         super().__init__(parent)
@@ -163,7 +163,6 @@ class SetValueDialog(QDialog):
 
 
 class PlotWindow(QMainWindow):
-    """Rolling plot of 3 selected columns, fed by tailing the CSV."""
 
     def __init__(self, csv_path, channels, parent=None):
         super().__init__(parent)
@@ -214,7 +213,7 @@ class PlotWindow(QMainWindow):
                 plot.setXLink(first_plot)
             if row == len(self.channels) - 1:
                 plot.setLabel("bottom", "sample")
-            self.curves.append(plot.plot(pen=pg.mkPen(PLOT_PENS[row], width=1.5)))
+            self.curves.append(plot.plot(pen=pg.mkPen(PLOT_PENS[row], width=5)))
             self.y_bufs.append(deque(maxlen=self.buffer_spin.value()))
 
         central = QWidget()
@@ -364,7 +363,7 @@ class MainWindow(QMainWindow):
         for i, (label, slot) in enumerate(entries):
             button = QPushButton(label)
             button.clicked.connect(slot)
-            grid.addWidget(button, i // 3, i % 3)
+            grid.addWidget(button, i // NUM_PLOTS, i % NUM_PLOTS)
             self.command_buttons.append(button)
         return group
 
@@ -549,7 +548,8 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
+    # app.setStyle("Windows11")
+    app.setPalette(app.style().standardPalette()) 
     app.setPalette(app.style().standardPalette())
     window = MainWindow()
     window.show()
